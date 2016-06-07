@@ -7,11 +7,13 @@ var localVideo;
 var remoteVideo;
 var peerConnection;
 var iamcaller = false;
-peerConnectionConfig = {'iceServers': [{
-    url: 'turn:numb.viagenie.ca',
-    credential: 'muazkh',
-    username: 'webrtc@live.com'
-},]};
+peerConnectionConfig = {iceServers: [
+        {urls: "stun:23.21.150.121"},
+        {urls: "stun:stun.l.google.com:19302"},
+        {urls: "turn:numb.viagenie.ca", credential: "webrtcdemo", username: "louis%40mozilla.com"}
+    ]}
+
+    
 call = function(){
 	iamcaller = true;
 	start(true);
@@ -19,19 +21,16 @@ call = function(){
 Streamy.on("", function(message) {
   		gotMessageFromServer(message);
 	});
+
 Template.webrtc.onRendered(function(){
 
     localVideo = document.getElementById('localVideo');
     remoteVideo = document.getElementById('remoteVideo');
 
-    
-    Streamy.on("endcall", function(message) {
-       endcallremote();
-    });
 
     var constraints = {
         video: true,
-        audio: true,
+        audio: false,
     };
 
     if(navigator.getUserMedia) {
@@ -45,7 +44,6 @@ function getUserMediaSuccess(stream) {
 	localVideo = document.getElementById('localVideo');
     remoteVideo = document.getElementById('remoteVideo');
     localStream = stream;
-    window.localStream = localStream;
     localVideo.src = window.URL.createObjectURL(stream);
 }
 
@@ -58,7 +56,7 @@ function start(isCaller) {
     peerConnection.onicecandidate = gotIceCandidate;
     peerConnection.onaddstream = gotRemoteStream;
     peerConnection.addStream(localStream);
-
+    console.log(peerConnection)
     if(isCaller) {
         peerConnection.createOffer(gotDescription, createOfferError);
     }
@@ -89,11 +87,9 @@ function gotRemoteStream(event) {
 
 function createOfferError(error) {
     console.log(error);
-
 }
 function createAnswerError(error) {
     console.log(error);
-
 }
 function errorHandler(error) {
     console.log(error);
@@ -104,6 +100,7 @@ function gotMessageFromServer(message) {
     var signal = message;
     if(signal.sdp) {
     	 peerConnection.setRemoteDescription(new RTCSessionDescription(signal.sdp), function() {
+    	 	if(!iamcaller)
             peerConnection.createAnswer(gotDescription, errorHandler);
         }, errorHandler);
     } else if(signal.ice) {
