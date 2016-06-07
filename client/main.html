@@ -1,0 +1,13 @@
+<body>
+  {{> webrtc}}
+</body>
+
+<template name="webrtc">
+  <div id="videos">
+    <video id="localVideo" autoplay muted></video>
+    <video id="remoteVideo" autoplay></video>
+  </div>
+  <div>
+    <button onclick="call();" >Start</button>
+  </div>
+  </template>
